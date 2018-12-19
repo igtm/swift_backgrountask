@@ -7,16 +7,59 @@
 //
 
 import UIKit
+import WebKit
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
 
+    let wkWebView = WKWebView()
+    
+    var backButton: UIButton!
+    var forwadButton: UIButton!
+    var targetUrl = "https://test2.pro.ekiten.jp/"
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        print("bbbb")
+        
+        // background fetch
+        application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
+        
         return true
+    }
+    
+    func application(_ application: UIApplication,
+                     performFetchWithCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult)
+        -> Void) {
+        
+        print("aaaa")
+        // wkWebView.navigationDelegate = self
+
+        // スワイプでの「戻る・すすむ」を有効にする
+        //wkWebView.allowsBackForwardNavigationGestures = true
+        
+        //let urlRequest = URLRequest(url:URL(string:targetUrl)!)
+        //wkWebView.load(urlRequest)
+        print("====")
+        
+        // GET Request
+        let url = URL(string: "https://google.com/")
+        let request = URLRequest(url: url!)
+        let session = URLSession.shared
+        session.dataTask(with: request) { (data, response, error) in
+            if error == nil, let data = data, let response = response as? HTTPURLResponse {
+                // HTTPヘッダの取得
+                print("Content-Type: \(response.allHeaderFields["Content-Type"] ?? "")")
+                // HTTPステータスコード
+                print("statusCode: \(response.statusCode)")
+                print(String(data: data, encoding: String.Encoding.utf8) ?? "")
+            }
+            
+            completionHandler(UIBackgroundFetchResult.newData)
+        }.resume()
+        
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -44,3 +87,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+
+extension ViewController: WKNavigationDelegate {
+    
+    // ウェブのロード完了時に呼び出される
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        
+        print("finish load.")
+    }
+}
